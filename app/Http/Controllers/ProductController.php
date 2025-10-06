@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\ProductResource;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -57,7 +58,12 @@ class ProductController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $product = Product::find($id);
+
+        return response()->json([
+            'data' => new ProductResource($product),
+            'message' => 'Product Detail fetched'
+        ], 200);
     }
 
     /**
@@ -65,7 +71,29 @@ class ProductController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $product = Product::find($id);
+
+        if ($product->user_id !== auth()->user()->id) {
+            return response()->json([
+                'message' => 'Unauthorized access to this product.'
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'nullable|string|max:100',
+            'description' => 'nullable|string',
+            'price' => 'nullable|numeric|min:0',
+            'sku' => 'nullable|string|max:100',
+            'status' => 'nullable|in:active,inactive',
+        ]);
+
+        $product->update($validated);
+
+        return response()->json([
+            'message' => 'Product updated successfully.',
+            'data' => $product
+        ], 200);
     }
 
     /**

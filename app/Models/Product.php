@@ -13,6 +13,7 @@ class Product extends Model
         'description',
         'price',
         'sku',
+        'status' //enum, active,inactive
     ];
 
     public function user()
