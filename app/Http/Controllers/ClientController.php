@@ -56,7 +56,10 @@ class ClientController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $client = Client::where('user_id', auth()->id())->findOrFail($id);
+        return response()->json([
+            'data' => new ClientResource($client),
+        ]);
     }
 
     /**
@@ -64,7 +67,23 @@ class ClientController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $client = Client::where('user_id', auth()->id())->findOrFail($id);
+
+        $request->validate([
+            'name' => 'sometimes|required|string|max:255',
+            'email' => 'sometimes|nullable|email|max:255',
+            'phone' => 'sometimes|nullable|string|max:20',
+            'address' => 'sometimes|nullable|string|max:500',
+            'company' => 'sometimes|nullable|string|max:255',
+            'tax_number' => 'sometimes|nullable|string|max:100',
+        ]);
+
+        $client->update($request->only(['name', 'email', 'phone', 'address', 'company', 'tax_number']));
+
+        return response()->json([
+            'data' => new ClientResource($client),
+            'message' => 'Client updated successfully',
+        ]);
     }
 
     /**
